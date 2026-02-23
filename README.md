@@ -64,3 +64,15 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Practical production notes (Plant Disease API)
+
+- Protect write endpoints for diseases (`POST/PUT/DELETE /api/diseases`) behind `auth:sanctum`.
+- Ensure post creation always uses authenticated user id (no hard-coded fallback user).
+- Configure FastAPI via environment variables:
+  - `FASTAPI_BASE_URL`
+  - `FASTAPI_TIMEOUT_SECONDS`
+  - `FASTAPI_RETRY_TIMES`
+  - `FASTAPI_RETRY_SLEEP_MS`
+  - `FASTAPI_VERIFY_SSL`
+- FastAPI integration now returns a safe error response without leaking exception internals.

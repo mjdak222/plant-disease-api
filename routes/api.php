@@ -14,10 +14,7 @@ Route::post('/predict-disease', [FastApiController::class, 'predict']);
 
 
 Route::get('/diseases', [DiseaseController::class, 'index']);
-Route::post('/diseases', [DiseaseController::class, 'store']);
 Route::get('/diseases/name/{name}', [DiseaseController::class, 'showByName']);
-Route::put('/diseases/{disease}', [DiseaseController::class, 'update']);
-Route::delete('/diseases/{disease}', [DiseaseController::class, 'destroy']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
@@ -34,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // 📝 المقالات
    
     Route::post('/posts',       [PostController::class, 'store']);   // إضافة مقال
+
+    // إدارة الأمراض (محمي)
+    Route::post('/diseases', [DiseaseController::class, 'store']);
+    Route::put('/diseases/{disease}', [DiseaseController::class, 'update']);
+    Route::delete('/diseases/{disease}', [DiseaseController::class, 'destroy']);
 
     // لايكات
     Route::post('/posts/{post}/like',   [LikeController::class, 'store']);

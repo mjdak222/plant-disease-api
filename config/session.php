@@ -18,7 +18,8 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    // Keep sessions file-based by default to avoid runtime DB/SSL session failures.
+    'driver' => 'file',
 
     /*
     |--------------------------------------------------------------------------

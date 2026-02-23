@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'fastapi' => [
+        'base_url' => env('FASTAPI_BASE_URL', 'http://127.0.0.1:8001'),
+        'timeout_seconds' => (int) env('FASTAPI_TIMEOUT_SECONDS', 20),
+        'retry_times' => (int) env('FASTAPI_RETRY_TIMES', 2),
+        'retry_sleep_ms' => (int) env('FASTAPI_RETRY_SLEEP_MS', 250),
+        'verify_ssl' => filter_var(env('FASTAPI_VERIFY_SSL', true), FILTER_VALIDATE_BOOL),
+    ],
+
 ];

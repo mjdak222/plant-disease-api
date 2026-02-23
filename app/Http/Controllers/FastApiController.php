@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Disease;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class FastApiController extends Controller
 {
@@ -17,28 +18,38 @@ class FastApiController extends Controller
         $image = $request->file('image');
 
         try {
-            // إرسال الصورة إلى FastAPI مع اسم الحقل 'file'
-            $response = Http::timeout(3000)
-                ->withoutVerifying()
+            $baseUrl = rtrim(config('services.fastapi.base_url'), '/');
+            $response = Http::timeout(config('services.fastapi.timeout_seconds'))
+                ->retry(
+                    config('services.fastapi.retry_times'),
+                    config('services.fastapi.retry_sleep_ms')
+                )
+                ->withOptions(['verify' => config('services.fastapi.verify_ssl')])
                 ->attach('file', file_get_contents($image), $image->getClientOriginalName())
-                ->post('https://desktops-segment-humanitarian-np.trycloudflare.com/predict');
+                ->post("{$baseUrl}/predict");
 
             if (!$response->successful()) {
+                Log::error('FastAPI request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'فشل الاتصال بالـ FastAPI',
-                    'details' => $response->body(),
-                ], 500);
+                    'message' => 'فشل الاتصال بخدمة التشخيص',
+                ], 502);
             }
 
             $fastapiData = $response->json();
             $diseaseName = $fastapiData['disease_name'] ?? null;
 
             if (!$diseaseName) {
+                Log::warning('FastAPI response missing disease_name', ['response' => $fastapiData]);
+
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'لم يتم التعرف على اسم المرض من FastAPI',
-                ], 500);
+                    'message' => 'لم يتم التعرف على المرض من خدمة التشخيص',
+                ], 502);
             }
 
             $disease = Disease::where('name', $diseaseName)->first();
@@ -62,11 +73,14 @@ class FastApiController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('FastAPI integration exception', [
+                'message' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'خطأ في الاتصال بالـ FastAPI',
-                'details' => $e->getMessage()
-            ], 500);
+                'message' => 'تعذر الوصول لخدمة التشخيص حالياً',
+            ], 502);
         }
     }
 }

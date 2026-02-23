@@ -7,6 +7,10 @@ Route::get('/', function () {
     return view('welcome'); // أو أي view عندك
 });
 
+Route::get('/user/dashboard', function () {
+    return view('user.dashboard');
+})->name('user.dashboard');
+
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminUserController;
